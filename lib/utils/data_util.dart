@@ -1,4 +1,4 @@
-import 'package:flutter_tree_pro/flutter_tree.dart';
+import '../flutter_tree.dart';
 
 /// @create at 2021/7/15 15:01
 /// @create by kevin

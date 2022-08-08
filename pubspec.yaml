@@ -1,7 +1,7 @@
-name: flutter_tree_pro
-description: Flutter tree select widget.
-version: 0.0.7
-homepage: https://github.com/Invincible1996/flutter_tree
+name: flutter_tree_with_breadcrumb
+description: Flutter tree select with breadcrumb widget.
+version: 0.1.0
+homepage: https://github.com/nEdAy/flutter_tree_with_breadcrumb
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

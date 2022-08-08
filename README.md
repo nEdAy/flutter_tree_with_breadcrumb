@@ -1,23 +1,23 @@
 # packages
 
-Flutter tree select widget.
+Flutter tree select with breadcrumb widget.
 
 # Screenshot
 
 ![flutter_tree](https://user-images.githubusercontent.com/22675676/136653434-133b7e4a-fa57-463c-a11a-64a8711c9de9.gif)
 
 ## Usage
-To use this plugin, add flutter_tree_pro as a dependency in your pubspec.yaml file.
+To use this plugin, add flutter_tree_with_breadcrumb as a dependency in your pubspec.yaml file.
 ```
 dependencies:
-  flutter_tree_pro: ^0.0.3
+  flutter_tree_with_breadcrumb: ^0.1.0
 ```
 Use as a widget
 ```
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Flutter tree pro')),
+      appBar: AppBar(title: Text('Flutter tree with breadcrumb')),
       body: Container(
         child: FlutterTree(
           listData: treeListData,
