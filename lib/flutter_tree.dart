@@ -123,7 +123,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       });
       for (var item in widget.initialListData) {
         for (var element in treeMap.values.toList()) {
-          if (item['id'] == element['id']) {
+          if (item[widget.config.id] == element[widget.config.id]) {
             setCheckStatus(element);
             break;
           }
@@ -338,7 +338,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     }
 
     // 父节点
-    if (dataModel[widget.config.parentId]! > 0) {
+    var parentId = dataModel[widget.config.parentId];
+    if (parentId != null && parentId != "0") {
       updateParentNode(dataModel);
     }
     setState(() {
@@ -370,7 +371,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     for (var value2 in checkedList) {
       if (value2['children'] != null && value2['children'].isNotEmpty) {
         for (var value in checkedList) {
-          if (value2['id'] == value['parentId']) {
+          if (value2[widget.config.id] == value[widget.config.parentId]) {
             list1.add(value);
           }
         }
@@ -387,11 +388,11 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     //       (e) => {
     //         "subject": e['subject'],
     //         "exams": e['exams'],
-    //         "parentId": e['parentId'],
+    //         "parentId": e[widget.config.parentId],
     //         "knowledgeNo": e['knowledgeNo'],
     //         "knowledgeName": e['knowledgeName'],
     //         "examPaperData": e['examPaperData'],
-    //         "id": e['id'],
+    //         "id": e[widget.config.id],
     //         "level": e['level'],
     //       },
     //     )
@@ -429,7 +430,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
     // 如果还有父节点 解析往上更新
     if (treeMap[par[widget.config.parentId]] != null ||
-        treeMap[par[widget.config.parentId]] == 0) {
+        treeMap[par[widget.config.parentId]] == "0") {
       updateParentNode(par);
     }
   }

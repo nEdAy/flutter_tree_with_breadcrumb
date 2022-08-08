@@ -36,18 +36,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //默认数据
   List<Map<String, dynamic>> initialTreeData = [
-    {"parentId": 1063, "value": "牡丹江市", "id": 1314},
-    {"parentId": 1063, "value": "齐齐哈尔市", "id": 1318},
-    {"parentId": 1063, "value": "佳木斯市", "id": 1320},
-    {"parentId": 1066, "value": "长春市", "id": 1323},
-    {"parentId": 1066, "value": "通化市", "id": 1325},
-    {"parentId": 1066, "value": "白山市", "id": 1328},
-    {"parentId": 1066, "value": "辽源市", "id": 1330},
-    {"parentId": 1066, "value": "松原市", "id": 1332},
-    {"parentId": 1009, "value": "南京市", "id": 1130},
-    {"parentId": 1009, "value": "无锡市", "id": 1132},
-    {"parentId": 1009, "value": "常州市", "id": 1133},
-    {"parentId": 1009, "value": "镇江市", "id": 1134},
+    {"parent_id": 1063, "name": "牡丹江市", "id": 1314},
+    {"parent_id": 1063, "name": "齐齐哈尔市", "id": 1318},
+    {"parent_id": 1063, "name": "佳木斯市", "id": 1320},
+    {"parent_id": 1066, "name": "长春市", "id": 1323},
+    {"parent_id": 1066, "name": "通化市", "id": 1325},
+    {"parent_id": 1066, "name": "白山市", "id": 1328},
+    {"parent_id": 1066, "name": "辽源市", "id": 1330},
+    {"parent_id": 1066, "name": "松原市", "id": 1332},
+    {"parent_id": 1009, "name": "南京市", "id": 1130},
+    {"parent_id": 1009, "name": "无锡市", "id": 1132},
+    {"parent_id": 1009, "name": "常州市", "id": 1133},
+    {"parent_id": 1009, "name": "镇江市", "id": 1134},
   ];
 
   @override
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   loadData() async {
     var response = await rootBundle.loadString('assets/data.json');
     setState(() {
-      json.decode(response)['country'].forEach((item) {
+      json.decode(response)['list'].forEach((item) {
         treeListData.add(item);
       });
     });
@@ -77,9 +77,10 @@ class _MyHomePageState extends State<MyHomePage> {
               listData: treeListData,
               initialListData: initialTreeData,
               config: Config(
-                parentId: 'parentId',
+                id: 'id',
+                parentId: 'parent_id',
                 dataType: DataType.DataList,
-                label: 'value',
+                label: 'name',
               ),
               onChecked: (List<Map<String, dynamic>> checkedList) {
                 logger.v(checkedList);

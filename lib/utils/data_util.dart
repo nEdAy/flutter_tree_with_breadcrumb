@@ -9,20 +9,28 @@ class DataUtil {
   /// @desc  List to map
   static Map<String, dynamic> transformListToMap(List dataList, Config config) {
     Map obj = {};
-    int? rootId;
+    String? rootId;
     dataList.forEach((v) {
+      if (v[config.id] != null) {
+        v[config.id] = v[config.id].toString();
+      }
       // 根节点
-      if (v[config.parentId] != 0) {
-        if (obj[v[config.parentId]] != null) {
-          if (obj[v[config.parentId]][config.children] != null) {
-            obj[v[config.parentId]][config.children].add(v);
+      if (v[config.parentId] != null) {
+        v[config.parentId] = v[config.parentId].toString();
+        if (v[config.parentId] != "0") {
+          if (obj[v[config.parentId]] != null) {
+            if (obj[v[config.parentId]][config.children] != null) {
+              obj[v[config.parentId]][config.children].add(v);
+            } else {
+              obj[v[config.parentId]][config.children] = [v];
+            }
           } else {
-            obj[v[config.parentId]][config.children] = [v];
+            obj[v[config.parentId]] = {
+              config.children: [v],
+            };
           }
         } else {
-          obj[v[config.parentId]] = {
-            config.children: [v],
-          };
+          rootId = v[config.id];
         }
       } else {
         rootId = v[config.id];
@@ -49,12 +57,12 @@ class DataUtil {
 
   /// @params
   /// @desc 将树形结构数据平铺开
-  // factoryTreeData(treeModel ,Config config) {
-  //   treeModel['open'] = false;
-  //   treeModel['checked'] = 0;
-  //   treeMap.putIfAbsent(treeModel[config.id], () => treeModel);
-  //   (treeModel[config.children] ?? []).forEach((element) {
-  //     factoryTreeData(element);
-  //   });
-  // }
+// factoryTreeData(treeModel ,Config config) {
+//   treeModel['open'] = false;
+//   treeModel['checked'] = 0;
+//   treeMap.putIfAbsent(treeModel[config.id], () => treeModel);
+//   (treeModel[config.children] ?? []).forEach((element) {
+//     factoryTreeData(element);
+//   });
+// }
 }
