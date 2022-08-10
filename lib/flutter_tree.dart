@@ -59,13 +59,7 @@ class FlutterTreePro extends StatefulWidget {
   ///  source data type List
   final List<Map<String, dynamic>> listData;
 
-  ///  initial source data type Map
-  final Map<String, dynamic> initialTreeData;
-
-  ///  initial source data type List
-  final List<Map<String, dynamic>> initialListData;
-
-  final Function(List<Map<String, dynamic>>) onChecked;
+  final Function(List<dynamic>) onChecked;
 
   ///  Config
   final Config config;
@@ -76,10 +70,8 @@ class FlutterTreePro extends StatefulWidget {
   FlutterTreePro({
     Key? key,
     this.treeData = const <String, dynamic>{},
-    this.initialTreeData = const <String, dynamic>{},
     this.config = const Config(),
     this.listData = const <Map<String, dynamic>>[],
-    this.initialListData = const <Map<String, dynamic>>[],
     required this.onChecked,
     this.isExpanded = false,
   }) : super(key: key);
@@ -94,9 +86,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   ///
   bool checkedBox = false;
-
-  ///
-  int selectValue = 0;
 
   ///
   Map<int, String> checkedMap = {
@@ -118,18 +107,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
           DataUtil.transformListToMap(widget.listData, widget.config);
       sourceTreeMap = listToMap;
       factoryTreeData(sourceTreeMap);
-      widget.initialListData.forEach((element) {
-        element['checked'] = 0;
-      });
-      for (var item in widget.initialListData) {
-        for (var element in treeMap.values.toList()) {
-          if (item[widget.config.id] == element[widget.config.id]) {
-            setCheckStatus(element);
-            break;
-          }
-        }
-        selectCheckedBox(item);
-      }
     } else {
       sourceTreeMap = widget.treeData;
     }
@@ -304,14 +281,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   }
 
   /// @params
-  /// @desc
-  selectNode(Map<String, dynamic> dataModel) {
-    setState(() {
-      selectValue = dataModel['value']!;
-    });
-  }
-
-  /// @params
   /// @desc 选中帅选框
   selectCheckedBox(Map<String, dynamic> dataModel) {
     int checked = dataModel['checked']!;
@@ -363,42 +332,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
         checkedList.add(node);
       }
     }
-
-    // logger.v(checkedList.length);
-
-    // List中多余的元素
-    var list1 = [];
-    for (var value2 in checkedList) {
-      if (value2['children'] != null && value2['children'].isNotEmpty) {
-        for (var value in checkedList) {
-          if (value2[widget.config.id] == value[widget.config.parentId]) {
-            list1.add(value);
-          }
-        }
-      }
-    }
-
-    // 移除List中多余的元素
-    var set = Set.from(checkedList);
-    var set2 = Set.from(list1);
-    List<Map<String, dynamic>> filterList = List.from(set.difference(set2));
-    widget.onChecked(filterList);
-    // var submitList = filterList
-    //     .map(
-    //       (e) => {
-    //         "subject": e['subject'],
-    //         "exams": e['exams'],
-    //         "parentId": e[widget.config.parentId],
-    //         "knowledgeNo": e['knowledgeNo'],
-    //         "knowledgeName": e['knowledgeName'],
-    //         "examPaperData": e['examPaperData'],
-    //         "id": e[widget.config.id],
-    //         "level": e['level'],
-    //       },
-    //     )
-    //     .toList();
-    // logger.v(submitList.length);
-    // logger.v(submitList);
+    widget.onChecked(checkedList);
   }
 
   /// @params
