@@ -42,27 +42,4 @@ class DataUtil {
     });
     return obj[rootId] ?? {};
   }
-
-  /// @params
-  /// @desc expand tree map
-  Map<String, dynamic> expandMap(Map<String, dynamic> dataMap, Config config) {
-    dataMap['open'] = false;
-    dataMap['checked'] = 0;
-    dataMap.putIfAbsent(dataMap[config.id], () => dataMap);
-    (dataMap[config.children] ?? []).forEach((element) {
-      expandMap(element, config);
-    });
-    return {"aaa": ""};
-  }
-
-  /// @params
-  /// @desc 将树形结构数据平铺开
-// factoryTreeData(treeModel ,Config config) {
-//   treeModel['open'] = false;
-//   treeModel['checked'] = 0;
-//   treeMap.putIfAbsent(treeModel[config.id], () => treeModel);
-//   (treeModel[config.children] ?? []).forEach((element) {
-//     factoryTreeData(element);
-//   });
-// }
 }
