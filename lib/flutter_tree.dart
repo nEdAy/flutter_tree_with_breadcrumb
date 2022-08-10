@@ -21,9 +21,6 @@ class Config {
   ///父级id key
   final String parentId;
 
-  ///value key
-  final String value;
-
   ///
   final String label;
 
@@ -36,7 +33,6 @@ class Config {
   const Config({
     this.dataType = DataType.DataMap,
     this.parentId = 'parentId',
-    this.value = 'value',
     this.label = 'label',
     this.id = 'id',
     this.children = 'children',
