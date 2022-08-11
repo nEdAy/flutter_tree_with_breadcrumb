@@ -168,7 +168,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     return GestureDetector(
       onTap: () => _onOpenNode(treeNode),
       child: Container(
-        width: MediaQuery.of(context).size.width,
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +306,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     _modifyAllCheckedNode(hasCheckedNode);
 
     this.checkedList = checkedList;
-    widget.onChecked(this.checkedList);
   }
 
   _modifyAllCheckedNode(bool hasCheckedNode) {
@@ -370,7 +368,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   _buildBreadcrumb() {
     if (_breadcrumbList.length > 0) {
       Timer(
-          Duration(milliseconds: 500),
+          Duration(milliseconds: 0),
           () => _breadcrumbController
               .jumpTo(_breadcrumbController.position.maxScrollExtent));
     } else {
