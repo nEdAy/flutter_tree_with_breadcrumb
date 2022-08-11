@@ -1,5 +1,7 @@
 library packages;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'flutter_tree_with_breadcrumb.dart';
@@ -47,16 +49,12 @@ class FlutterTreePro extends StatefulWidget {
   /// Config
   final Config config;
 
-  /// if expanded items
-  final bool isExpanded;
-
   FlutterTreePro({
     Key? key,
     this.treeData = const <String, dynamic>{},
     this.config = const Config(),
     this.listData = const <Map<String, dynamic>>[],
     required this.onChecked,
-    this.isExpanded = false,
   }) : super(key: key);
 
   @override
@@ -81,6 +79,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   Map<String, dynamic> allCheckedNode = {};
 
+  List<Map<String, dynamic>> _breadcrumbList = [];
+
   @override
   initState() {
     super.initState();
@@ -93,6 +93,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     } else {
       sourceTreeMap = widget.treeData;
     }
+    _breadcrumbList.add(sourceTreeMap);
     allCheckedNode['name'] = widget.config.allCheckedNodeName;
     allCheckedNode['checked'] = CheckStatus.checked;
   }
@@ -100,7 +101,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   /// @params
   /// @desc expand tree data to map
   _factoryTreeData(treeModel) {
-    treeModel['open'] = widget.isExpanded;
     treeModel['checked'] = CheckStatus.unChecked;
     treeMap.putIfAbsent(treeModel[widget.config.id], () => treeModel);
     (treeModel[widget.config.children] ?? []).forEach((element) {
@@ -108,37 +108,59 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     });
   }
 
-  /// @params
-  /// @desc render root
+  ScrollController _treeNodeController = ScrollController();
+
   _buildTreeRootList() {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => _onOpenNode(sourceTreeMap),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAllCheckedNode(),
-                Column(children: _buildTreeNodeList(sourceTreeMap))
-              ],
+    final children = _breadcrumbList.last[widget.config.children];
+    if (children.length > 0) {
+      Timer(
+          Duration(milliseconds: 0),
+          () => _treeNodeController
+              .jumpTo(_treeNodeController.position.minScrollExtent));
+    } else {
+      return SizedBox.shrink();
+    }
+    return Expanded(
+      child: ListView.separated(
+        controller: _treeNodeController,
+        itemBuilder: (context, index) {
+          final treeNode = children[index];
+          if (treeNode != null) {
+            if (_breadcrumbList.length == 1 && index == 0) {
+              return Column(
+                children: [
+                  _buildTreeNode(allCheckedNode, isAllNode: true),
+                  _buildTreeNode(treeNode)
+                ],
+              );
+            }
+            return _buildTreeNode(treeNode);
+          } else {
+            return SizedBox.shrink();
+          }
+        },
+        separatorBuilder: (context, index) {
+          return Container(
+            color: Colors.white,
+            child: const Divider(
+              height: 1,
+              thickness: 1,
+              color: Color(0xFFF0F0F0),
+              indent: 20,
+              endIndent: 20,
             ),
-          ),
-        ),
-      ],
+          );
+        },
+        itemCount: children.length,
+      ),
     );
-  }
-
-  _buildAllCheckedNode() {
-    return _buildTreeNode(allCheckedNode, isAllNode: true);
-  }
-
-  _buildTreeNodeList(Map<String, dynamic> data) {
-    return (data[widget.config.children] ?? [])
-        .map<Widget>((treeNode) => _buildTreeNode(treeNode))
-        .toList();
+    // child: Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: [
+    //     _buildTreeNode(allCheckedNode, isAllNode: true),
+    //     Column(children: _buildTreeNodeList(sourceTreeMap))
+    //   ],
+    // ),
   }
 
   Widget _buildTreeNode(Map<String, dynamic> treeNode,
@@ -147,7 +169,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       onTap: () => _onOpenNode(treeNode),
       child: Container(
         width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -163,20 +185,13 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
                 SizedBox(width: 8),
                 (treeNode[widget.config.children] ?? []).isNotEmpty
                     ? Icon(
-                        (treeNode['open'] ?? false)
-                            ? Icons.keyboard_arrow_down_rounded
-                            : Icons.keyboard_arrow_right,
+                        Icons.keyboard_arrow_right,
                         size: 24,
                         color: Color(0xFF767676),
                       )
                     : SizedBox.shrink(),
               ],
             ),
-            (treeNode['open'] ?? false)
-                ? Column(
-                    children: _buildTreeNodeList(treeNode),
-                  )
-                : SizedBox.shrink(),
           ],
         ),
       ),
@@ -228,9 +243,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   /// @desc expand item if has item has children
   _onOpenNode(Map<String, dynamic> treeNode) {
     if ((treeNode[widget.config.children] ?? []).isEmpty) return;
-    treeNode['open'] = !treeNode['open'];
     setState(() {
-      sourceTreeMap = sourceTreeMap;
+      _breadcrumbList.add(treeNode);
     });
   }
 
@@ -339,34 +353,82 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 468,
       color: Colors.white,
       child: Column(
         children: [
           _buildBreadcrumb(),
-          SizedBox(
-            height: 334,
-            child: SingleChildScrollView(
-              child: _buildTreeRootList(),
-            ),
-          ),
-          _buildToolBar()
+          _buildTreeRootList(),
+          _buildToolBar(),
         ],
       ),
     );
   }
 
+  ScrollController _breadcrumbController = ScrollController();
+
   _buildBreadcrumb() {
+    if (_breadcrumbList.length > 0) {
+      Timer(
+          Duration(milliseconds: 500),
+          () => _breadcrumbController
+              .jumpTo(_breadcrumbController.position.maxScrollExtent));
+    } else {
+      return SizedBox.shrink();
+    }
     return Container(
+      height: 52,
       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Row(
         children: [
-          const Text('服务集团',
-              style: TextStyle(
-                  color: Colors.black, //Color(0xFF434343),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500))
+          Expanded(
+            child: ListView.separated(
+              controller: _breadcrumbController,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return _buildBreadcrumbNode(index);
+              },
+              separatorBuilder: (context, index) {
+                return SizedBox(width: 4);
+              },
+              itemCount: _breadcrumbList.length,
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  _buildBreadcrumbNode(int index) {
+    final treeNode = _breadcrumbList[index];
+    if (index == 0) {
+      return _buildBreadcrumbNodeText(treeNode, index);
+    }
+    return Row(
+      children: [
+        Icon(
+          Icons.keyboard_arrow_right,
+          size: 16,
+          color: Color(0xFFABABAB),
+        ),
+        SizedBox(width: 4),
+        _buildBreadcrumbNodeText(treeNode, index),
+      ],
+    );
+  }
+
+  _buildBreadcrumbNodeText(Map<String, dynamic> treeNode, int index) {
+    return GestureDetector(
+      child: Text(treeNode[widget.config.label],
+          style: TextStyle(
+              color: Colors.black, //Color(0xFF434343),
+              fontSize: 14,
+              fontWeight: FontWeight.w500)),
+      onTap: () {
+        setState(() {
+          _breadcrumbList = _breadcrumbList.getRange(0, index + 1).toList();
+        });
+      },
     );
   }
 
