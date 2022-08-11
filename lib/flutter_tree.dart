@@ -27,13 +27,16 @@ class Config {
 
   final String allCheckedNodeName;
 
+  final String breadcrumbRootName;
+
   const Config(
       {this.dataType = DataType.DataList,
       this.parentId = 'parentId',
       this.label = 'name',
       this.id = 'id',
       this.children = 'children',
-      this.allCheckedNodeName = '全部'});
+      this.allCheckedNodeName = '全部',
+      this.breadcrumbRootName = '根'});
 }
 
 /// @desc components
@@ -110,14 +113,16 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   ScrollController _treeNodeController = ScrollController();
 
+  _treeNodeListToTop() {
+    Timer(
+        Duration(milliseconds: 0),
+        () => _treeNodeController
+            .jumpTo(_treeNodeController.position.minScrollExtent));
+  }
+
   _buildTreeRootList() {
     final children = _breadcrumbList.last[widget.config.children];
-    if (children.length > 0) {
-      Timer(
-          Duration(milliseconds: 0),
-          () => _treeNodeController
-              .jumpTo(_treeNodeController.position.minScrollExtent));
-    } else {
+    if (children.length == 0) {
       return SizedBox.shrink();
     }
     return Expanded(
@@ -238,6 +243,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     setState(() {
       _breadcrumbList.add(treeNode);
     });
+    _treeNodeListToTop();
   }
 
   /// @desc set current treeNode checked/unChecked
@@ -393,7 +399,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   _buildBreadcrumbNode(int index) {
     final treeNode = _breadcrumbList[index];
     if (index == 0) {
-      return _buildBreadcrumbNodeText(treeNode, index);
+      return _buildBreadcrumbNodeText(widget.config.breadcrumbRootName, index);
     }
     return Row(
       children: [
@@ -403,14 +409,14 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
           color: Color(0xFFABABAB),
         ),
         SizedBox(width: 4),
-        _buildBreadcrumbNodeText(treeNode, index),
+        _buildBreadcrumbNodeText(treeNode[widget.config.label], index),
       ],
     );
   }
 
-  _buildBreadcrumbNodeText(Map<String, dynamic> treeNode, int index) {
+  _buildBreadcrumbNodeText(String label, int index) {
     return GestureDetector(
-      child: Text(treeNode[widget.config.label],
+      child: Text(label,
           style: TextStyle(
               color: Colors.black, //Color(0xFF434343),
               fontSize: 14,
@@ -419,6 +425,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
         setState(() {
           _breadcrumbList = _breadcrumbList.take(index + 1).toList();
         });
+        _treeNodeListToTop();
       },
     );
   }

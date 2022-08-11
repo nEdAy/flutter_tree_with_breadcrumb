@@ -62,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
               config: Config(
                 parentId: 'parent_id',
                 allCheckedNodeName: '全部项目',
+                breadcrumbRootName: '服务集团',
               ),
               onChecked: (List<dynamic> checkedList) {
                 // for 空间 (checked 父节点、叶子节点)
