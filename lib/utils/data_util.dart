@@ -8,7 +8,9 @@ class DataUtil {
   /// @params
   /// @desc  List to map
   static Map<String, dynamic> transformListToMap(
-      List<Map<String, dynamic>> dataList, Config config) {
+      List<Map<String, dynamic>> dataList,
+      Config config,
+      bool Function(Map<String, dynamic> treeNode, Config config) isNotRootNode) {
     Map obj = {};
     String? rootId;
     dataList.forEach((v) {
@@ -18,8 +20,8 @@ class DataUtil {
       // 根节点
       if (v.containsKey(config.parentId)) {
         v[config.parentId] = v[config.parentId].toString();
-        final parentId = v[config.parentId];
-        if (parentId != null && parentId != "0" && parentId != "") {
+        if (isNotRootNode(v, config)) {
+          final parentId = v[config.parentId];
           if (obj[parentId] != null) {
             if (obj[parentId][config.children] != null) {
               obj[parentId][config.children].add(v);

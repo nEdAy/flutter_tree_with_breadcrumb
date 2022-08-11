@@ -47,7 +47,13 @@ class FlutterTreePro extends StatefulWidget {
   /// source data type List
   final List<Map<String, dynamic>> listData;
 
-  final Function(List<dynamic>) onChecked;
+  final Function(Iterable) onChecked;
+
+  final Iterable Function(Iterable)? onFilteringLeafNode;
+
+  final List<String> Function(Iterable)? onCropStringList;
+
+  final bool Function(Map<String, dynamic>, Config) isNotRootNode;
 
   /// Config
   final Config config;
@@ -57,6 +63,9 @@ class FlutterTreePro extends StatefulWidget {
     this.treeData = const <String, dynamic>{},
     this.config = const Config(),
     this.listData = const <Map<String, dynamic>>[],
+    this.onFilteringLeafNode,
+    this.onCropStringList,
+    required this.isNotRootNode,
     required this.onChecked,
   }) : super(key: key);
 
@@ -89,8 +98,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     super.initState();
     // set default select
     if (widget.config.dataType == DataType.DataList) {
-      var listToMap =
-          DataUtil.transformListToMap(widget.listData, widget.config);
+      var listToMap = DataUtil.transformListToMap(
+          widget.listData, widget.config, widget.isNotRootNode);
       sourceTreeMap = listToMap;
       _factoryTreeData(sourceTreeMap);
     } else {
@@ -114,16 +123,18 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   ScrollController _treeNodeController = ScrollController();
 
   _treeNodeListToTop() {
-    Timer(
-        Duration(milliseconds: 0),
-        () => _treeNodeController
-            .jumpTo(_treeNodeController.position.minScrollExtent));
+    Timer(Duration(milliseconds: 0), () {
+      if (_treeNodeController.hasClients) {
+        _treeNodeController
+            .jumpTo(_treeNodeController.position.minScrollExtent);
+      }
+    });
   }
 
   _buildTreeRootList() {
     final children = _breadcrumbList.last[widget.config.children];
-    if (children.length == 0) {
-      return SizedBox.shrink();
+    if (children == null || children.length == 0) {
+      return Expanded(child: SizedBox.shrink());
     }
     return Expanded(
       child: ListView.separated(
@@ -272,9 +283,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       _deepChangeCheckStatus(
           treeNode, treeNode['checked'] != CheckStatus.checked);
 
-      // 父节点
-      var parentId = treeNode[widget.config.parentId];
-      if (parentId != null && parentId != "0" && parentId != "") {
+      // 有父节点
+      if (widget.isNotRootNode(treeNode, widget.config)) {
         _updateParentNode(treeNode);
       }
     }
@@ -366,10 +376,12 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   _buildBreadcrumb() {
     if (_breadcrumbList.length > 0) {
-      Timer(
-          Duration(milliseconds: 0),
-          () => _breadcrumbController
-              .jumpTo(_breadcrumbController.position.maxScrollExtent));
+      Timer(Duration(milliseconds: 0), () {
+        if (_treeNodeController.hasClients) {
+          _breadcrumbController
+              .jumpTo(_breadcrumbController.position.maxScrollExtent);
+        }
+      });
     } else {
       return SizedBox.shrink();
     }
@@ -467,7 +479,16 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
             ),
           ),
           ElevatedButton(
-            onPressed: () => widget.onChecked(this.checkedList),
+            onPressed: () {
+              Iterable outputList = this.checkedList;
+              if (widget.onFilteringLeafNode != null) {
+                outputList = widget.onFilteringLeafNode!(outputList);
+              }
+              if (widget.onCropStringList != null) {
+                outputList = widget.onCropStringList!(outputList);
+              }
+              widget.onChecked(outputList);
+            },
             style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 12.5, horizontal: 63),
                 shape: RoundedRectangleBorder(
