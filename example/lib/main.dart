@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   loadData() async {
-    var response = await rootBundle.loadString('assets/response.json');
+    var response = await rootBundle.loadString('assets/project.json');
     setState(() {
       json.decode(response)['list'].forEach((item) {
         treeListData.add(item);
@@ -60,28 +60,43 @@ class _MyHomePageState extends State<MyHomePage> {
               // isExpanded: true,
               listData: treeListData,
               config: Config(
-                id: 'id',
                 parentId: 'parent_id',
-                dataType: DataType.DataList,
-                label: 'name',
+                allCheckedNodeName: '全部项目',
               ),
               onChecked: (List<dynamic> checkedList) {
-                final leafNodeCheckedList = filteringLeafNode(checkedList);
-                print(leafNodeCheckedList);
+                // for 空间 (checked 父节点、叶子节点)
+                final checkedProjectList = toProjectList(checkedList);
+                print('父节点、叶子节点：${checkedProjectList.length}');
+
+                // for 项目、标签 (checked 叶子节点)
+                final leafNodeList = filteringLeafNode(checkedList);
+                final leafProjectList = toProjectList(leafNodeList);
+                print('叶子节点：${leafProjectList.length}');
+
+                // for 项目、标签、空间
+                final checkedNodeCount = checkedProjectList.length;
+                if (checkedNodeCount == 0) {
+                  print('输出：${null}');
+                } else {
+                  // print('输出：$checkedProjectList');
+                  print('输出：$leafProjectList');
+                }
               },
             )
           : Center(child: CircularProgressIndicator()),
     );
   }
 
-  List<String> filteringLeafNode(List<dynamic> checkedList) {
-    return checkedList
-        .where((element) =>
-            element.containsKey('project_id') &&
-            element.containsKey('type') &&
-            element['type'] == 2 &&
-            element['project_id'] != null)
-        .map((filteringElement) {
+  Iterable filteringLeafNode(List<dynamic> checkedList) {
+    return checkedList.where((element) =>
+        element.containsKey('project_id') &&
+        element.containsKey('type') &&
+        element['type'] == 2 &&
+        element['project_id'] != null);
+  }
+
+  List<String> toProjectList(Iterable iterable) {
+    return iterable.map((filteringElement) {
       return filteringElement['project_id'].toString();
     }).toList();
   }

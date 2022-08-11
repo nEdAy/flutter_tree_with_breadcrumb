@@ -7,35 +7,37 @@ import '../flutter_tree.dart';
 class DataUtil {
   /// @params
   /// @desc  List to map
-  static Map<String, dynamic> transformListToMap(List dataList, Config config) {
+  static Map<String, dynamic> transformListToMap(
+      List<Map<String, dynamic>> dataList, Config config) {
     Map obj = {};
     String? rootId;
     dataList.forEach((v) {
-      if (v[config.id] != null) {
+      if (v.containsKey([config.id])) {
         v[config.id] = v[config.id].toString();
       }
       // 根节点
-      if (v[config.parentId] != null) {
+      if (v.containsKey(config.parentId)) {
         v[config.parentId] = v[config.parentId].toString();
-        if (v[config.parentId] != "0") {
-          if (obj[v[config.parentId]] != null) {
-            if (obj[v[config.parentId]][config.children] != null) {
-              obj[v[config.parentId]][config.children].add(v);
+        final parentId = v[config.parentId];
+        if (parentId != null && parentId != "0" && parentId != "") {
+          if (obj[parentId] != null) {
+            if (obj[parentId][config.children] != null) {
+              obj[parentId][config.children].add(v);
             } else {
-              obj[v[config.parentId]][config.children] = [v];
+              obj[parentId][config.children] = [v];
             }
           } else {
-            obj[v[config.parentId]] = {
+            obj[parentId] = {
               config.children: [v],
             };
           }
-        } else {
+        } else if (rootId == null) {
           rootId = v[config.id];
         }
-      } else {
+      } else if (rootId == null) {
         rootId = v[config.id];
       }
-      if (obj[v[config.id]] != null) {
+      if (v.containsKey(config.id) && obj[v[config.id]] != null) {
         v[config.children] = obj[v[config.id]][config.children];
       }
       obj[v[config.id]] = v;

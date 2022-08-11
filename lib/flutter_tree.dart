@@ -1,7 +1,6 @@
 library packages;
 
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 import 'flutter_tree_with_breadcrumb.dart';
 
@@ -10,54 +9,42 @@ enum DataType {
   DataMap,
 }
 
-/// @create at 2021/7/15 15:01
-/// @create by kevin
 /// @desc  参数类型配置
 class Config {
   ///数据类型
-
   final DataType dataType;
 
   ///父级id key
   final String parentId;
 
-  ///
   final String label;
 
-  ///
   final String id;
 
-  ///
   final String children;
 
-  const Config({
-    this.dataType = DataType.DataMap,
-    this.parentId = 'parentId',
-    this.label = 'label',
-    this.id = 'id',
-    this.children = 'children',
-  });
+  final String allCheckedNodeName;
+
+  const Config(
+      {this.dataType = DataType.DataList,
+      this.parentId = 'parentId',
+      this.label = 'name',
+      this.id = 'id',
+      this.children = 'children',
+      this.allCheckedNodeName = '全部'});
 }
 
-var logger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-  ),
-);
-
-/// @create at 2021/7/15 15:01
-/// @create by kevin
 /// @desc components
 class FlutterTreePro extends StatefulWidget {
   /// source data type Map
   final Map<String, dynamic> treeData;
 
-  ///  source data type List
+  /// source data type List
   final List<Map<String, dynamic>> listData;
 
   final Function(List<dynamic>) onChecked;
 
-  ///  Config
+  /// Config
   final Config config;
 
   /// if expanded items
@@ -76,23 +63,23 @@ class FlutterTreePro extends StatefulWidget {
   _FlutterTreeProState createState() => _FlutterTreeProState();
 }
 
+enum CheckStatus {
+  unChecked,
+  partChecked,
+  checked,
+}
+
 class _FlutterTreeProState extends State<FlutterTreePro> {
-  ///
   Map<String, dynamic> sourceTreeMap = {};
 
-  ///
   bool checkedBox = false;
 
-  ///
-  Map<int, String> checkedMap = {
-    0: '',
-    1: 'partChecked',
-    2: 'checked',
-  };
-
-  /// @params
   /// @desc expand map tree to map
   Map treeMap = {};
+
+  List<dynamic> checkedList = [];
+
+  Map<String, dynamic> allCheckedNode = {};
 
   @override
   initState() {
@@ -106,12 +93,14 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     } else {
       sourceTreeMap = widget.treeData;
     }
+    allCheckedNode['name'] = widget.config.allCheckedNodeName;
+    allCheckedNode['checked'] = CheckStatus.checked;
   }
 
   /// @params
   /// @desc set current item checked
   setCheckStatus(item) {
-    item['checked'] = 2;
+    item['checked'] = CheckStatus.checked;
     if (item['children'] != null) {
       item['children'].forEach((element) {
         setCheckStatus(element);
@@ -123,7 +112,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   /// @desc expand tree data to map
   factoryTreeData(treeModel) {
     treeModel['open'] = widget.isExpanded;
-    treeModel['checked'] = 0;
+    treeModel['checked'] = CheckStatus.unChecked;
     treeMap.putIfAbsent(treeModel[widget.config.id], () => treeModel);
     (treeModel[widget.config.children] ?? []).forEach((element) {
       factoryTreeData(element);
@@ -131,53 +120,20 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   }
 
   /// @params
-  /// @desc render parent
-  buildTreeParent() {
+  /// @desc render root
+  buildTreeRootList() {
     return Column(
       children: [
         GestureDetector(
           onTap: () => onOpenNode(sourceTreeMap),
           child: Container(
             width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.only(left: 20, top: 15),
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    (sourceTreeMap[widget.config.children] ?? []).isNotEmpty
-                        ? Icon(
-                            (sourceTreeMap['open'] ?? false)
-                                ? Icons.keyboard_arrow_down_rounded
-                                : Icons.keyboard_arrow_right,
-                            size: 20,
-                          )
-                        : SizedBox.shrink(),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        selectCheckedBox(sourceTreeMap);
-                      },
-                      child: buildCheckBoxIcon(sourceTreeMap),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${sourceTreeMap[widget.config.label]}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-                (sourceTreeMap['open'] ?? false)
-                    ? Column(
-                        children: buildTreeNode(sourceTreeMap),
-                      )
-                    : SizedBox.shrink(),
+                _buildAllCheckedNode(),
+                Column(children: _buildTreeNodeList(sourceTreeMap))
               ],
             ),
           ),
@@ -186,91 +142,103 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     );
   }
 
-  /// @params
-  /// @desc render item
-  buildTreeNode(Map<String, dynamic> data) {
-    return (data[widget.config.children] ?? []).map<Widget>(
-      (e) {
-        return GestureDetector(
-          onTap: () => onOpenNode(e),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.only(left: 20, top: 15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  _buildAllCheckedNode() {
+    return _buildTreeNode(allCheckedNode, isAllNode: true);
+  }
+
+  _buildTreeNodeList(Map<String, dynamic> data) {
+    return (data[widget.config.children] ?? [])
+        .map<Widget>((treeNode) => _buildTreeNode(treeNode))
+        .toList();
+  }
+
+  Widget _buildTreeNode(Map<String, dynamic> treeNode,
+      {bool isAllNode = false}) {
+    return GestureDetector(
+      onTap: () => onOpenNode(treeNode),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    (e[widget.config.children] ?? []).isNotEmpty
-                        ? Icon(
-                            (e['open'] ?? false)
-                                ? Icons.keyboard_arrow_down_rounded
-                                : Icons.keyboard_arrow_right,
-                            size: 20,
-                          )
-                        : SizedBox.shrink(),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        selectCheckedBox(e);
-                      },
-                      child: buildCheckBoxIcon(e),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${e[widget.config.label]}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
+                GestureDetector(
+                  onTap: () => selectCheckedBox(treeNode, isAllNode: isAllNode),
+                  child: _buildCheckBoxIcon(treeNode),
                 ),
-                (e['open'] ?? false)
-                    ? Column(
-                        children: buildTreeNode(e),
+                SizedBox(width: 8),
+                _buildCheckBoxLabel(treeNode),
+                SizedBox(width: 8),
+                (treeNode[widget.config.children] ?? []).isNotEmpty
+                    ? Icon(
+                        (treeNode['open'] ?? false)
+                            ? Icons.keyboard_arrow_down_rounded
+                            : Icons.keyboard_arrow_right,
+                        size: 24,
+                        color: Color(0xFF767676),
                       )
                     : SizedBox.shrink(),
               ],
             ),
-          ),
-        );
-      },
-    ).toList();
+            (treeNode['open'] ?? false)
+                ? Column(
+                    children: _buildTreeNodeList(treeNode),
+                  )
+                : SizedBox.shrink(),
+          ],
+        ),
+      ),
+    );
   }
 
   /// @params
   /// @desc render icon by checked type
-  Icon buildCheckBoxIcon(Map<String, dynamic> e) {
-    switch (e['checked'] ?? 0) {
-      case 0:
+  Icon _buildCheckBoxIcon(Map<String, dynamic> treeNode) {
+    switch (treeNode['checked'] as CheckStatus) {
+      case CheckStatus.unChecked:
         return Icon(
           Icons.check_box_outline_blank,
-          color: Color(0XFFCCCCCC),
+          color: Color(0XFF737373),
+          size: 24,
         );
-      case 1:
+      case CheckStatus.partChecked:
         return Icon(
           Icons.indeterminate_check_box,
-          color: Color(0X990000FF),
+          color: Color(0XFFDE7F02),
+          size: 24,
         );
-      case 2:
+      case CheckStatus.checked:
         return Icon(
           Icons.check_box,
-          color: Color(0X990000FF),
+          color: Color(0XFFDE7F02),
+          size: 24,
         );
-      default:
-        return Icon(Icons.remove);
     }
+  }
+
+  _buildCheckBoxLabel(Map<String, dynamic> treeNode) {
+    final isChecked = treeNode['checked'] != CheckStatus.unChecked;
+    return Expanded(
+      child: Text(
+        '${treeNode[widget.config.label]}',
+        maxLines: 2,
+        softWrap: true,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            fontSize: 16,
+            color: isChecked ? Color(0xFFD97F00) : Color(0xFF434343),
+            fontWeight: isChecked ? FontWeight.w500 : FontWeight.w400),
+      ),
+    );
   }
 
   /// @params
   /// @desc expand item if has item has children
-  onOpenNode(Map<String, dynamic> model) {
-    if ((model[widget.config.children] ?? []).isEmpty) return;
-    model['open'] = !model['open'];
+  onOpenNode(Map<String, dynamic> treeNode) {
+    if ((treeNode[widget.config.children] ?? []).isEmpty) return;
+    treeNode['open'] = !treeNode['open'];
     setState(() {
       sourceTreeMap = sourceTreeMap;
     });
@@ -278,39 +246,54 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   /// @params
   /// @desc 选中帅选框
-  selectCheckedBox(Map<String, dynamic> dataModel) {
-    int checked = dataModel['checked']!;
-    if ((dataModel[widget.config.children] ?? []).isNotEmpty) {
-      var stack = MStack();
-      stack.push(dataModel);
-      while (stack.top > 0) {
-        Map<String, dynamic> node = stack.pop();
-        for (var item in node[widget.config.children] ?? []) {
-          stack.push(item);
-        }
-        if (checked == 2) {
-          node['checked'] = 0;
-        } else {
-          node['checked'] = 2;
+  selectCheckedBox(Map<String, dynamic> treeNode, {bool isAllNode = false}) {
+    CheckStatus checked = treeNode['checked'];
+    if (isAllNode) {
+      if (checked == CheckStatus.unChecked) {
+        if ((sourceTreeMap[widget.config.children] ?? []).isNotEmpty) {
+          _deepChangeCheckStatus(CheckStatus.checked, sourceTreeMap);
         }
       }
     } else {
-      if (checked == 2) {
-        dataModel['checked'] = 0;
+      if ((treeNode[widget.config.children] ?? []).isNotEmpty) {
+        _deepChangeCheckStatus(checked, treeNode);
       } else {
-        dataModel['checked'] = 2;
+        if (checked == CheckStatus.checked) {
+          treeNode['checked'] = CheckStatus.unChecked;
+        } else {
+          treeNode['checked'] = CheckStatus.checked;
+        }
+      }
+
+      // 父节点
+      var parentId = treeNode[widget.config.parentId];
+      if (parentId != null && parentId != "0" && parentId != "") {
+        updateParentNode(treeNode);
       }
     }
 
-    // 父节点
-    var parentId = dataModel[widget.config.parentId];
-    if (parentId != null && parentId != "0") {
-      updateParentNode(dataModel);
-    }
     setState(() {
       sourceTreeMap = sourceTreeMap;
     });
+
     getCheckedItems();
+  }
+
+  void _deepChangeCheckStatus(
+      CheckStatus checked, Map<String, dynamic> treeNode) {
+    var stack = MStack();
+    stack.push(treeNode);
+    while (stack.top > 0) {
+      Map<String, dynamic> node = stack.pop();
+      for (var item in node[widget.config.children] ?? []) {
+        stack.push(item);
+      }
+      if (checked == CheckStatus.checked) {
+        node['checked'] = CheckStatus.unChecked;
+      } else {
+        node['checked'] = CheckStatus.checked;
+      }
+    }
   }
 
   /// @params
@@ -324,11 +307,23 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       for (var item in (node[widget.config.children] ?? [])) {
         stack.push(item);
       }
-      if (node['checked'] == 2) {
+      if (node['checked'] == CheckStatus.checked) {
         checkedList.add(node);
       }
     }
-    widget.onChecked(checkedList);
+
+    final hasCheckedNode = checkedList.length > 0;
+    _modifyAllCheckedNode(hasCheckedNode);
+
+    this.checkedList = checkedList;
+    widget.onChecked(this.checkedList);
+  }
+
+  void _modifyAllCheckedNode(bool hasCheckedNode) {
+    setState(() {
+      allCheckedNode['checked'] =
+          hasCheckedNode ? CheckStatus.unChecked : CheckStatus.checked;
+    });
   }
 
   /// @params
@@ -339,28 +334,29 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     int checkLen = 0;
     bool partChecked = false;
     for (var item in (par[widget.config.children] ?? [])) {
-      if (item['checked'] == 2) {
+      if (item['checked'] == CheckStatus.checked) {
         checkLen++;
-      } else if (item['checked'] == 1) {
+      } else if (item['checked'] == CheckStatus.partChecked) {
         partChecked = true;
         break;
       }
     }
 
-    // 如果子孩子全都是选择的， 父节点就全选
+    // 如果子孩子全都是选择的，父节点就全选
     if (checkLen == (par[widget.config.children] ?? []).length) {
-      par['checked'] = 2;
+      par['checked'] = CheckStatus.checked;
     } else if (partChecked ||
         (checkLen < (par[widget.config.children] ?? []).length &&
             checkLen > 0)) {
-      par['checked'] = 1;
+      par['checked'] = CheckStatus.partChecked;
     } else {
-      par['checked'] = 0;
+      par['checked'] = CheckStatus.unChecked;
     }
 
     // 如果还有父节点 解析往上更新
     if (treeMap[par[widget.config.parentId]] != null ||
-        treeMap[par[widget.config.parentId]] == "0") {
+        treeMap[par[widget.config.parentId]] == "0" ||
+        treeMap[par[widget.config.parentId]] == "") {
       updateParentNode(par);
     }
   }
@@ -369,8 +365,85 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      child: SingleChildScrollView(
-        child: buildTreeParent(),
+      child: Column(
+        children: [
+          _buildBreadcrumb(),
+          SizedBox(
+            height: 334,
+            child: SingleChildScrollView(
+              child: buildTreeRootList(),
+            ),
+          ),
+          _buildToolBar()
+        ],
+      ),
+    );
+  }
+
+  _buildBreadcrumb() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      child: Row(
+        children: [
+          const Text('服务集团',
+              style: TextStyle(
+                  color: Colors.black, //Color(0xFF434343),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500))
+        ],
+      ),
+    );
+  }
+
+  _buildToolBar() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            width: 1,
+            color: Color(0xFFF0F0F0),
+          ),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(10, 16, 20, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton(
+            onPressed: () {
+              if (allCheckedNode['checked'] == CheckStatus.unChecked) {
+                selectCheckedBox(allCheckedNode, isAllNode: true);
+              }
+            },
+            style: TextButton.styleFrom(padding: EdgeInsets.all(10)),
+            child: Text(
+              '重置',
+              style: TextStyle(
+                  color: allCheckedNode['checked'] == CheckStatus.unChecked
+                      ? Color(0xFF767676)
+                      : Color(0xFFAAAAAA),
+                  fontWeight: allCheckedNode['checked'] == CheckStatus.unChecked
+                      ? FontWeight.w500
+                      : FontWeight.w400,
+                  fontSize: 18),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => widget.onChecked(this.checkedList),
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12.5, horizontal: 63),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6)),
+                backgroundColor: const Color(0xFFFF9F08)),
+            child: const Text(
+              '确定',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
       ),
     );
   }
