@@ -154,13 +154,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
         itemCount: children.length,
       ),
     );
-    // child: Column(
-    //   crossAxisAlignment: CrossAxisAlignment.start,
-    //   children: [
-    //     _buildTreeNode(allCheckedNode, isAllNode: true),
-    //     Column(children: _buildTreeNodeList(sourceTreeMap))
-    //   ],
-    // ),
   }
 
   Widget _buildTreeNode(Map<String, dynamic> treeNode,
@@ -424,7 +417,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
               fontWeight: FontWeight.w500)),
       onTap: () {
         setState(() {
-          _breadcrumbList = _breadcrumbList.getRange(0, index + 1).toList();
+          _breadcrumbList = _breadcrumbList.take(index + 1).toList();
         });
       },
     );
@@ -445,11 +438,14 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextButton(
-            onPressed: () {
-              if (allCheckedNode['checked'] == CheckStatus.unChecked) {
-                _selectCheckedBox(allCheckedNode, isAllNode: true);
-              }
-            },
+            onPressed: allCheckedNode['checked'] == CheckStatus.unChecked
+                ? () {
+                    _selectCheckedBox(allCheckedNode, isAllNode: true);
+                    setState(() {
+                      _breadcrumbList = _breadcrumbList.take(1).toList();
+                    });
+                  }
+                : null,
             style: TextButton.styleFrom(padding: EdgeInsets.all(10)),
             child: Text(
               '重置',
