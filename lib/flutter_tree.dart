@@ -356,14 +356,23 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
     final hasCheckedNode = checkedList.isNotEmpty;
     final isNullChecked = nullCheckedNode['checked'] == CheckStatus.checked;
-    _modifyAllCheckedNode(hasCheckedNode || isNullChecked);
+    setState(() {
+      if (hasCheckedNode) {
+        nullCheckedNode['checked'] = CheckStatus.unChecked;
+      }
+      if (hasCheckedNode || isNullChecked) {
+        allCheckedNode['checked'] = CheckStatus.unChecked;
+      } else {
+        allCheckedNode['checked'] = CheckStatus.checked;
+      }
+    });
     this.checkedList = checkedList;
   }
 
-  _modifyAllCheckedNode(bool isUnChecked) {
+  _modifyNullCheckedNode(bool toUnChecked) {
     setState(() {
-      allCheckedNode['checked'] =
-          isUnChecked ? CheckStatus.unChecked : CheckStatus.checked;
+      nullCheckedNode['checked'] =
+          toUnChecked ? CheckStatus.unChecked : CheckStatus.checked;
     });
   }
 
