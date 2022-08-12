@@ -1,8 +1,8 @@
-import 'package:example/space.dart';
-import 'package:example/tag.dart';
+import 'package:example/filter/space.dart';
+import 'package:example/filter/tag.dart';
 import 'package:flutter/material.dart';
 
-import 'project.dart';
+import 'filter/project.dart';
 
 void main() {
   runApp(MyApp());

@@ -146,6 +146,13 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
               return Column(
                 children: [
                   _buildTreeNode(allCheckedNode, isAllNode: true),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFF0F0F0),
+                    indent: 20,
+                    endIndent: 20,
+                  ),
                   _buildTreeNode(treeNode)
                 ],
               );
@@ -156,15 +163,12 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
           }
         },
         separatorBuilder: (context, index) {
-          return Container(
-            color: Colors.white,
-            child: const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFF0F0F0),
-              indent: 20,
-              endIndent: 20,
-            ),
+          return const Divider(
+            height: 1,
+            thickness: 1,
+            color: Color(0xFFF0F0F0),
+            indent: 20,
+            endIndent: 20,
           );
         },
         itemCount: children.length,
