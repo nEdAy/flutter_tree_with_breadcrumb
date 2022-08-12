@@ -180,6 +180,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       {bool isAllNode = false}) {
     return GestureDetector(
       onTap: () => _onOpenNode(treeNode),
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: Column(
