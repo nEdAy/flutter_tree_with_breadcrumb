@@ -18,8 +18,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
       ),
       // home: ProjectIFilter(title: '项目'),
-      // home: TagIFilter(title: '标签'),
-      home: SpaceIFilter(title: '空间'),
+      home: TagIFilter(title: '标签'),
+      // home: SpaceIFilter(title: '空间'),
     );
   }
 }

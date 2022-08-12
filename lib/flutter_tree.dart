@@ -355,7 +355,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     }
 
     // 如果还有父节点 解析往上更新
-    if (widget.isNotRootNode(treeMap[par[widget.config.parentId]], widget.config)) {
+    if (widget.isNotRootNode(par, widget.config)) {
       _updateParentNode(par);
     }
   }
