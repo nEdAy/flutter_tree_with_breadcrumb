@@ -53,7 +53,7 @@ class _SpaceIFilterState extends State<SpaceIFilter> {
                     id != null &&
                     treeNode[config.parentId] != treeNode[config.id];
               },
-              onChecked: (Iterable checkedList) {
+              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
                 final checkedNodeCount = checkedList.length;
                 if (checkedNodeCount == 0) {
                   print('输出：${null}');

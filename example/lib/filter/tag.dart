@@ -42,18 +42,27 @@ class _TagIFilterState extends State<TagIFilter> {
               listData: treeListData,
               config: Config(
                 breadcrumbRootName: '标签',
+                nullCheckedNodeName: '无标签',
               ),
               onCropStringList: (Iterable iterable) {
                 return toTagList(iterable);
               },
               isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
                 final parentId = treeNode[config.parentId];
-                return parentId != null && parentId != "0" && parentId != "";
+                final type = treeNode['type'];
+                return parentId != null &&
+                    parentId != "" &&
+                    type != null &&
+                    type != 'ALL';
               },
-              onChecked: (Iterable checkedList) {
+              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
                 final checkedNodeCount = checkedList.length;
                 if (checkedNodeCount == 0) {
-                  print('输出：${null}');
+                  if (isNullCheckedNodeChecked) {
+                    print('输出：${[]}');
+                  } else {
+                    print('输出：${null}');
+                  }
                 } else {
                   print('输出：$checkedList');
                 }

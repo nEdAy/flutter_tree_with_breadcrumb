@@ -53,9 +53,9 @@ class _ProjectIFilterState extends State<ProjectIFilter> {
               },
               isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
                 final parentId = treeNode[config.parentId];
-                return parentId != null && parentId != "0" && parentId != "";
+                return parentId != null;
               },
-              onChecked: (Iterable checkedList) {
+              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
                 final checkedNodeCount = checkedList.length;
                 if (checkedNodeCount == 0) {
                   print('输出：${null}');
