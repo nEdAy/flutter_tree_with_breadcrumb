@@ -51,7 +51,7 @@ class _SpaceIFilterState extends State<SpaceIFilter> {
                 final id = treeNode[config.id];
                 return parentId != null &&
                     id != null &&
-                    treeNode[config.parentId] != [config.id];
+                    treeNode[config.parentId] != treeNode[config.id];
               },
               onChecked: (Iterable checkedList) {
                 final checkedNodeCount = checkedList.length;

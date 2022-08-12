@@ -17,9 +17,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
-      home: ProjectIFilter(title: '项目'),
-      //home: TagIFilter(title: '标签'),
-      //home: SpaceIFilter(title: '空间'),
+      // home: ProjectIFilter(title: '项目'),
+      // home: TagIFilter(title: '标签'),
+      home: SpaceIFilter(title: '空间'),
     );
   }
 }
