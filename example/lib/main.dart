@@ -12,14 +12,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Tree & Breadcrumb'),
+            bottom: const TabBar(
+              tabs: [
+                Tab(text: '项目'),
+                Tab(text: '标签'),
+                Tab(text: '空间'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              ProjectIFilter(title: '项目'),
+              TagIFilter(title: '标签'),
+              SpaceIFilter(title: '空间'),
+            ],
+          ),
+        ),
       ),
-      // home: ProjectIFilter(title: '项目'),
-      home: TagIFilter(title: '标签'),
-      // home: SpaceIFilter(title: '空间'),
     );
   }
 }
