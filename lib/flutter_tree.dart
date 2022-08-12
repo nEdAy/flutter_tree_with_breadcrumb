@@ -4,11 +4,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'flutter_tree_with_breadcrumb.dart';
+import 'utils/data_util.dart';
+import 'utils/util.dart';
 
 enum DataType {
-  DataList,
-  DataMap,
+  dataList,
+  dataMap,
 }
 
 /// @desc  参数类型配置
@@ -32,7 +33,7 @@ class Config {
   final String breadcrumbRootName;
 
   const Config(
-      {this.dataType = DataType.DataList,
+      {this.dataType = DataType.dataList,
       this.parentId = 'parentId',
       this.label = 'name',
       this.id = 'id',
@@ -61,7 +62,7 @@ class FlutterTreePro extends StatefulWidget {
   /// Config
   final Config config;
 
-  FlutterTreePro({
+  const FlutterTreePro({
     Key? key,
     this.treeData = const <String, dynamic>{},
     this.config = const Config(),
@@ -73,7 +74,7 @@ class FlutterTreePro extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FlutterTreeProState createState() => _FlutterTreeProState();
+  State<FlutterTreePro> createState() => _FlutterTreeProState();
 }
 
 enum CheckStatus {
@@ -102,7 +103,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   initState() {
     super.initState();
     // set default select
-    if (widget.config.dataType == DataType.DataList) {
+    if (widget.config.dataType == DataType.dataList) {
       var listToMap = DataUtil.transformListToMap(
           widget.listData, widget.config, widget.isNotRootNode);
       sourceTreeMap = listToMap;
@@ -123,7 +124,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     }
   }
 
-  /// @params
   /// @desc expand tree data to map
   _factoryTreeData(treeModel) {
     treeModel['checked'] = CheckStatus.unChecked;
@@ -133,10 +133,10 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     });
   }
 
-  ScrollController _treeNodeController = ScrollController();
+  final ScrollController _treeNodeController = ScrollController();
 
   _treeNodeListToTop() {
-    Timer(Duration(milliseconds: 0), () {
+    Timer(const Duration(milliseconds: 0), () {
       if (_treeNodeController.hasClients) {
         _treeNodeController
             .jumpTo(_treeNodeController.position.minScrollExtent);
@@ -147,7 +147,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   _buildTreeRootList() {
     final children = _breadcrumbList.last[widget.config.children];
     if (children == null || children.length == 0) {
-      return Expanded(child: SizedBox.shrink());
+      return const Expanded(child: SizedBox.shrink());
     }
     return Expanded(
       child: ListView.separated(
@@ -179,7 +179,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
             }
             return _buildTreeNode(treeNode);
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         },
         separatorBuilder: (context, index) {
@@ -200,12 +200,12 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     );
   }
 
-  Widget _buildTreeNode(Map<String, dynamic> treeNode) {
+  _buildTreeNode(Map<String, dynamic> treeNode) {
     return GestureDetector(
       onTap: () => _onOpenNode(treeNode),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -215,16 +215,16 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
                   onTap: () => _selectCheckedBox(treeNode),
                   child: _buildCheckBoxIcon(treeNode),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 _buildCheckBoxLabel(treeNode),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 (treeNode[widget.config.children] ?? []).isNotEmpty
-                    ? Icon(
+                    ? const Icon(
                         Icons.keyboard_arrow_right,
                         size: 24,
                         color: Color(0xFF767676),
                       )
-                    : SizedBox.shrink(),
+                    : const SizedBox.shrink(),
               ],
             ),
           ],
@@ -238,26 +238,26 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     if (treeNode['checked'] != null && treeNode['checked'] is CheckStatus) {
       switch (treeNode['checked'] as CheckStatus) {
         case CheckStatus.unChecked:
-          return Icon(
+          return const Icon(
             Icons.check_box_outline_blank,
             color: Color(0XFF737373),
             size: 24,
           );
         case CheckStatus.partChecked:
-          return Icon(
+          return const Icon(
             Icons.indeterminate_check_box,
             color: Color(0XFFDE7F02),
             size: 24,
           );
         case CheckStatus.checked:
-          return Icon(
+          return const Icon(
             Icons.check_box,
             color: Color(0XFFDE7F02),
             size: 24,
           );
       }
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 
@@ -271,13 +271,13 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
             fontSize: 16,
-            color: isChecked ? Color(0xFFD97F00) : Color(0xFF434343),
+            color:
+                isChecked ? const Color(0xFFD97F00) : const Color(0xFF434343),
             fontWeight: isChecked ? FontWeight.w500 : FontWeight.w400),
       ),
     );
   }
 
-  /// @params
   /// @desc expand item if has item has children
   _onOpenNode(Map<String, dynamic> treeNode) {
     if ((treeNode[widget.config.children] ?? []).isEmpty) return;
@@ -328,17 +328,14 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     } else {
       _deepChangeCheckStatus(
           treeNode, treeNode['checked'] != CheckStatus.checked);
-
       // 有父节点
       if (widget.isNotRootNode(treeNode, widget.config)) {
         _updateParentNode(treeNode);
       }
     }
-
     setState(() {
       sourceTreeMap = sourceTreeMap;
     });
-
     _getCheckedItems();
   }
 
@@ -357,7 +354,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       }
     }
 
-    final hasCheckedNode = checkedList.length > 0;
+    final hasCheckedNode = checkedList.isNotEmpty;
     final isNullChecked = nullCheckedNode['checked'] == CheckStatus.checked;
     _modifyAllCheckedNode(hasCheckedNode || isNullChecked);
     this.checkedList = checkedList;
@@ -416,22 +413,22 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     );
   }
 
-  ScrollController _breadcrumbController = ScrollController();
+  final ScrollController _breadcrumbController = ScrollController();
 
   _buildBreadcrumb() {
-    if (_breadcrumbList.length > 0) {
-      Timer(Duration(milliseconds: 0), () {
+    if (_breadcrumbList.isNotEmpty) {
+      Timer(const Duration(milliseconds: 0), () {
         if (_treeNodeController.hasClients) {
           _breadcrumbController
               .jumpTo(_breadcrumbController.position.maxScrollExtent);
         }
       });
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Container(
       height: 52,
-      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Row(
         children: [
           Expanded(
@@ -442,7 +439,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
                 return _buildBreadcrumbNode(index);
               },
               separatorBuilder: (context, index) {
-                return SizedBox(width: 4);
+                return const SizedBox(width: 4);
               },
               itemCount: _breadcrumbList.length,
             ),
@@ -459,12 +456,12 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     }
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.keyboard_arrow_right,
           size: 16,
           color: Color(0xFFABABAB),
         ),
-        SizedBox(width: 4),
+        const SizedBox(width: 4),
         _buildBreadcrumbNodeText(treeNode[widget.config.label], index),
       ],
     );
@@ -473,7 +470,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   _buildBreadcrumbNodeText(String label, int index) {
     return GestureDetector(
       child: Text(label,
-          style: TextStyle(
+          style: const TextStyle(
               color: Colors.black, //Color(0xFF434343),
               fontSize: 14,
               fontWeight: FontWeight.w500)),
@@ -488,7 +485,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
 
   _buildToolBar() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(
             width: 1,
@@ -496,7 +493,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
           ),
         ),
       ),
-      padding: EdgeInsets.fromLTRB(10, 16, 20, 16),
+      padding: const EdgeInsets.fromLTRB(10, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -514,13 +511,13 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
                     });
                   }
                 : null,
-            style: TextButton.styleFrom(padding: EdgeInsets.all(10)),
+            style: TextButton.styleFrom(padding: const EdgeInsets.all(10)),
             child: Text(
               '重置',
               style: TextStyle(
                   color: allCheckedNode['checked'] == CheckStatus.unChecked
-                      ? Color(0xFF767676)
-                      : Color(0xFFAAAAAA),
+                      ? const Color(0xFF767676)
+                      : const Color(0xFFAAAAAA),
                   fontWeight: allCheckedNode['checked'] == CheckStatus.unChecked
                       ? FontWeight.w500
                       : FontWeight.w400,
@@ -529,7 +526,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
           ),
           ElevatedButton(
             onPressed: () {
-              Iterable outputList = this.checkedList;
+              Iterable outputList = checkedList;
               if (widget.onFilteringLeafNode != null) {
                 outputList = widget.onFilteringLeafNode!(outputList);
               }
@@ -541,7 +538,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
               widget.onChecked(outputList, isNullCheckedNodeChecked);
             },
             style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12.5, horizontal: 63),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12.5, horizontal: 63),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6)),
                 backgroundColor: const Color(0xFFFF9F08)),
