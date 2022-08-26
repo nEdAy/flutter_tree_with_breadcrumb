@@ -51,24 +51,22 @@ class FlutterTreePro extends StatefulWidget {
   /// source data type List
   final List<Map<String, dynamic>> listData;
 
-  final Function(Iterable, bool) onChecked;
-
-  final Iterable Function(Iterable)? onFilteringLeafNode;
-
-  final List<String> Function(Iterable)? onCropStringList;
-
-  final bool Function(Map<String, dynamic>, Config) isNotRootNode;
-
   /// Config
   final Config config;
+
+  final bool isNullCheckedNodeChecked;
+
+  final Function(Map<String, dynamic>, List<Map<String, dynamic>>, bool)
+      onChecked;
+
+  final bool Function(Map<String, dynamic>, Config) isNotRootNode;
 
   const FlutterTreePro({
     Key? key,
     this.treeData = const <String, dynamic>{},
-    this.config = const Config(),
     this.listData = const <Map<String, dynamic>>[],
-    this.onFilteringLeafNode,
-    this.onCropStringList,
+    this.config = const Config(),
+    this.isNullCheckedNodeChecked = false,
     required this.isNotRootNode,
     required this.onChecked,
   }) : super(key: key);
@@ -89,9 +87,9 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   bool checkedBox = false;
 
   /// @desc expand map tree to map
-  Map treeMap = {};
+  Map<String, dynamic> treeMap = {};
 
-  List<dynamic> checkedList = [];
+  List<Map<String, dynamic>> checkedList = [];
 
   Map<String, dynamic> allCheckedNode = {};
 
@@ -103,15 +101,17 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   initState() {
     super.initState();
     // set default select
-    if (widget.config.dataType == DataType.dataList) {
-      var listToMap = DataUtil.transformListToMap(
+    if (widget.treeData.isEmpty) {
+      sourceTreeMap = DataUtil.transformListToMap(
           widget.listData, widget.config, widget.isNotRootNode);
-      sourceTreeMap = listToMap;
-      _factoryTreeData(sourceTreeMap);
     } else {
       sourceTreeMap = widget.treeData;
     }
+    _factoryTreeData(sourceTreeMap);
+
+    _breadcrumbList.clear();
     _breadcrumbList.add(sourceTreeMap);
+
     allCheckedNode = {
       'name': widget.config.allCheckedNodeName,
       'checked': CheckStatus.checked,
@@ -119,14 +119,20 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
     if (widget.config.nullCheckedNodeName != null) {
       nullCheckedNode = {
         'name': widget.config.nullCheckedNodeName,
-        'checked': CheckStatus.unChecked,
+        'checked': widget.isNullCheckedNodeChecked
+            ? CheckStatus.checked
+            : CheckStatus.unChecked,
       };
     }
+
+    _getCheckedItems();
   }
 
   /// @desc expand tree data to map
   _factoryTreeData(treeModel) {
-    treeModel['checked'] = CheckStatus.unChecked;
+    if (treeModel['checked'] == null) {
+      treeModel['checked'] = CheckStatus.unChecked;
+    }
     treeMap.putIfAbsent(treeModel[widget.config.id], () => treeModel);
     (treeModel[widget.config.children] ?? []).forEach((element) {
       _factoryTreeData(element);
@@ -342,7 +348,7 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   /// @desc 获取选中的条目
   _getCheckedItems() {
     var stack = MStack();
-    var checkedList = [];
+    var checkedList = <Map<String, dynamic>>[];
     stack.push(sourceTreeMap);
     while (stack.top > 0) {
       var node = stack.pop();
@@ -367,13 +373,6 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
       }
     });
     this.checkedList = checkedList;
-  }
-
-  _modifyNullCheckedNode(bool toUnChecked) {
-    setState(() {
-      nullCheckedNode['checked'] =
-          toUnChecked ? CheckStatus.unChecked : CheckStatus.checked;
-    });
   }
 
   _updateParentNode(Map<String, dynamic> dataModel) {
@@ -477,12 +476,13 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
   }
 
   _buildBreadcrumbNodeText(String label, int index) {
+    final isLast = _breadcrumbList.length - 1 == index;
     return GestureDetector(
       child: Text(label,
-          style: const TextStyle(
-              color: Colors.black, //Color(0xFF434343),
+          style: TextStyle(
+              color: isLast ? Colors.black : const Color(0xFF434343),
               fontSize: 14,
-              fontWeight: FontWeight.w500)),
+              fontWeight: isLast ? FontWeight.w500 : FontWeight.w400)),
       onTap: () {
         setState(() {
           _breadcrumbList = _breadcrumbList.take(index + 1).toList();
@@ -534,18 +534,8 @@ class _FlutterTreeProState extends State<FlutterTreePro> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Iterable outputList = checkedList;
-              if (widget.onFilteringLeafNode != null) {
-                outputList = widget.onFilteringLeafNode!(outputList);
-              }
-              if (widget.onCropStringList != null) {
-                outputList = widget.onCropStringList!(outputList);
-              }
-              var isNullCheckedNodeChecked =
-                  nullCheckedNode['checked'] == CheckStatus.checked;
-              widget.onChecked(outputList, isNullCheckedNodeChecked);
-            },
+            onPressed: () => widget.onChecked(sourceTreeMap, checkedList,
+                nullCheckedNode['checked'] == CheckStatus.checked),
             style: TextButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12.5, horizontal: 63),

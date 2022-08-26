@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../flutter_tree.dart';
 
 class DataUtil {
@@ -5,7 +7,8 @@ class DataUtil {
   static Map<String, dynamic> transformListToMap(
       List<Map<String, dynamic>> dataList,
       Config config,
-      bool Function(Map<String, dynamic> treeNode, Config config) isNotRootNode) {
+      bool Function(Map<String, dynamic> treeNode, Config config)
+      isNotRootNode) {
     Map obj = {};
     String? rootId;
     for (var v in dataList) {
@@ -40,5 +43,14 @@ class DataUtil {
       obj[v[config.id]] = v;
     }
     return obj[rootId] ?? {};
+  }
+
+  static Map<String, dynamic> copyDeepMap(Map<String, dynamic> map) {
+    return json.decode(json.encode(map));
+  }
+
+  static List<Map<String, dynamic>> copyDeepList(
+      List<Map<String, dynamic>> list) {
+    return json.decode(json.encode(list));
   }
 }

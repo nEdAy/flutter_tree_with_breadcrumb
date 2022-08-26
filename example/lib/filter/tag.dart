@@ -39,14 +39,12 @@ class _TagIFilterState extends State<TagIFilter> {
       ),
       body: treeListData.isNotEmpty
           ? FlutterTreePro(
+              key: const Key('tag'),
               listData: treeListData,
-              config: Config(
+              config: const Config(
                 breadcrumbRootName: '标签',
                 nullCheckedNodeName: '无标签',
               ),
-              onCropStringList: (Iterable iterable) {
-                return toTagList(iterable);
-              },
               isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
                 final parentId = treeNode[config.parentId];
                 final type = treeNode['type'];
@@ -55,20 +53,12 @@ class _TagIFilterState extends State<TagIFilter> {
                     type != null &&
                     type != 'ALL';
               },
-              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
-                final checkedNodeCount = checkedList.length;
-                if (checkedNodeCount == 0) {
-                  if (isNullCheckedNodeChecked) {
-                    print('输出：${[]}');
-                  } else {
-                    print('输出：${null}');
-                  }
-                } else {
-                  print('输出：$checkedList');
-                }
-              },
+              onChecked: (Map<String, dynamic> sourceTreeMap,
+                      List<Map<String, dynamic>> checkedList,
+                      bool isNullCheckedNodeChecked) =>
+                  toTagList(checkedList),
             )
-          : Center(child: CircularProgressIndicator()),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 

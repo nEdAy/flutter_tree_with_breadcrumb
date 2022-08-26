@@ -39,30 +39,25 @@ class _SpaceIFilterState extends State<SpaceIFilter> {
       ),
       body: treeListData.isNotEmpty
           ? FlutterTreePro(
-              listData: treeListData,
-              config: Config(
-                breadcrumbRootName: '空间',
-              ),
-              onCropStringList: (Iterable iterable) {
-                return toSpaceList(iterable);
-              },
-              isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
-                final parentId = treeNode[config.parentId];
-                final id = treeNode[config.id];
-                return parentId != null &&
-                    id != null &&
-                    treeNode[config.parentId] != treeNode[config.id];
-              },
-              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
-                final checkedNodeCount = checkedList.length;
-                if (checkedNodeCount == 0) {
-                  print('输出：${null}');
-                } else {
-                  print('输出：$checkedList');
-                }
-              },
-            )
-          : Center(child: CircularProgressIndicator()),
+        key: const Key('space'),
+        listData: treeListData,
+        config: const Config(
+          breadcrumbRootName: '空间',
+        ),
+        isNotRootNode:
+            (Map<String, dynamic> treeNode, Config config) {
+          final parentId = treeNode[config.parentId];
+          final id = treeNode[config.id];
+          return parentId != null &&
+              id != null &&
+              treeNode[config.parentId] != treeNode[config.id];
+        },
+        onChecked: (Map<String, dynamic> sourceTreeMap,
+            List<Map<String, dynamic>> checkedList,
+            bool isNullCheckedNodeChecked) =>
+            toSpaceList(checkedList),
+      )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 

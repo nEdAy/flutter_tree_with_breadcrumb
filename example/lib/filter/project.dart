@@ -39,44 +39,35 @@ class _ProjectIFilterState extends State<ProjectIFilter> {
       ),
       body: treeListData.isNotEmpty
           ? FlutterTreePro(
+              key: const Key('project'),
               listData: treeListData,
-              config: Config(
-                parentId: 'parent_id',
+              config: const Config(
                 allCheckedNodeName: '全部项目',
                 breadcrumbRootName: '服务集团',
               ),
-              onFilteringLeafNode: (Iterable iterable) {
-                return filteringProjectLeafNode(iterable);
-              },
-              onCropStringList: (Iterable iterable) {
-                return toProjectList(iterable);
-              },
               isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
                 final parentId = treeNode[config.parentId];
-                return parentId != null;
+                return parentId != null && parentId != '' && parentId != 'null';
               },
-              onChecked: (Iterable checkedList, bool isNullCheckedNodeChecked) {
-                final checkedNodeCount = checkedList.length;
-                if (checkedNodeCount == 0) {
-                  print('输出：${null}');
-                } else {
-                  print('输出：$checkedList');
-                }
-              },
-            )
-          : Center(child: CircularProgressIndicator()),
+              onChecked: (Map<String, dynamic> sourceTreeMap,
+                      List<Map<String, dynamic>> checkedList,
+                      bool isNullCheckedNodeChecked) =>
+                  toProjectList(filteringProjectLeafNode(checkedList)))
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
-  Iterable filteringProjectLeafNode(Iterable checkedList) {
-    return checkedList.where((element) =>
-        element.containsKey('project_id') &&
+  List<Map<String, dynamic>> filteringProjectLeafNode(
+      List<Map<String, dynamic>> checkedList) {
+    checkedList.retainWhere((element) =>
+    element.containsKey('projectId') &&
         element.containsKey('type') &&
         element['type'] == 2 &&
-        element['project_id'] != null);
+        element['projectId'] != "null");
+    return checkedList;
   }
 
-  List<String> toProjectList(Iterable iterable) {
+  List<String> toProjectList(List<Map<String, dynamic>> iterable) {
     return iterable.map((filteringElement) {
       return filteringElement['project_id'].toString();
     }).toList();
