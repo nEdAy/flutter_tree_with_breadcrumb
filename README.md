@@ -4,13 +4,13 @@ Flutter tree select with breadcrumb widget.
 
 # Screenshot
 
-![flutter_tree](https://user-images.githubusercontent.com/22675676/136653434-133b7e4a-fa57-463c-a11a-64a8711c9de9.gif)
+![flutter_tree_with_breadcrumb](screenshot/1661495160371.jpg)
 
 ## Usage
 To use this plugin, add flutter_tree_with_breadcrumb as a dependency in your pubspec.yaml file.
 ```
 dependencies:
-  flutter_tree_with_breadcrumb: ^0.1.0
+  flutter_tree_with_breadcrumb: ^0.1.1
 ```
 Use as a widget
 ```
