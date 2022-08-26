@@ -12,7 +12,7 @@ class DataUtil {
     Map obj = {};
     String? rootId;
     for (var v in dataList) {
-      if (v.containsKey([config.id])) {
+      if (v.containsKey(config.id)) {
         v[config.id] = v[config.id].toString();
       }
       // 根节点

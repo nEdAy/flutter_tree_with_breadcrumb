@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tree_with_breadcrumb/flutter_tree_with_breadcrumb.dart';
 
-class ProjectIFilter extends StatefulWidget {
-  ProjectIFilter({Key? key, required this.title}) : super(key: key);
+class DataIFilter extends StatefulWidget {
+  DataIFilter({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _ProjectIFilterState createState() => _ProjectIFilterState();
+  _DataIFilterState createState() => _DataIFilterState();
 }
 
-class _ProjectIFilterState extends State<ProjectIFilter> {
+class _DataIFilterState extends State<DataIFilter> {
   List<Map<String, dynamic>> treeListData = [];
 
   @override
@@ -23,9 +23,9 @@ class _ProjectIFilterState extends State<ProjectIFilter> {
   }
 
   loadData() async {
-    var response = await rootBundle.loadString('assets/project.json');
+    var response = await rootBundle.loadString('assets/data.json');
     setState(() {
-      json.decode(response)['data']['list'].forEach((item) {
+      json.decode(response)['list'].forEach((item) {
         treeListData.add(item);
       });
     });
@@ -39,38 +39,29 @@ class _ProjectIFilterState extends State<ProjectIFilter> {
       ),
       body: treeListData.isNotEmpty
           ? FlutterTreePro(
-              key: const Key('project'),
+              key: const Key('tag'),
               listData: treeListData,
               config: const Config(
-                allCheckedNodeName: '全部项目',
-                breadcrumbRootName: '服务集团',
+                breadcrumbRootName: '根节点',
                 parentId: 'parent_id'
               ),
               isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
                 final parentId = treeNode[config.parentId];
-                return parentId != null && parentId != '' && parentId != 'null';
+                return parentId != null &&
+                    parentId != "0";
               },
               onChecked: (Map<String, dynamic> sourceTreeMap,
                       List<Map<String, dynamic>> checkedList,
                       bool isNullCheckedNodeChecked) =>
-                  toProjectList(filteringProjectLeafNode(checkedList)))
+                  toDataList(checkedList),
+            )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 
-  List<Map<String, dynamic>> filteringProjectLeafNode(
-      List<Map<String, dynamic>> checkedList) {
-    checkedList.retainWhere((element) =>
-    element.containsKey('projectId') &&
-        element.containsKey('type') &&
-        element['type'] == 2 &&
-        element['projectId'] != "null");
-    return checkedList;
-  }
-
-  List<String> toProjectList(List<Map<String, dynamic>> iterable) {
+  List<String> toDataList(Iterable iterable) {
     return iterable.map((filteringElement) {
-      return filteringElement['project_id'].toString();
+      return filteringElement['id'].toString();
     }).toList();
   }
 }
