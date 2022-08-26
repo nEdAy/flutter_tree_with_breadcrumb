@@ -10,7 +10,7 @@ Flutter tree select with breadcrumb widget.
 To use this plugin, add flutter_tree_with_breadcrumb as a dependency in your pubspec.yaml file.
 ```
 dependencies:
-  flutter_tree_with_breadcrumb: ^0.1.1
+  flutter_tree_with_breadcrumb: ^0.1.2
 ```
 Use as a widget
 ```
@@ -19,15 +19,20 @@ Use as a widget
     return Scaffold(
       appBar: AppBar(title: Text('Flutter tree with breadcrumb')),
       body: Container(
-        child: FlutterTree(
+        child: FlutterTreePro(
           listData: treeListData,
-          initialListData: initialTreeData,
           config: Config(
-            parentId: 'parentId',
-            dataType: DataType.DataList,
+            parentId: 'parent_id',
             label: 'value',
           ),
-          onChecked: (List<Map<String, dynamic>> checkedList) {},
+          isNotRootNode: (Map<String, dynamic> treeNode, Config config) {
+            final parentId = treeNode[config.parentId];
+            return parentId != null &&
+                parentId != "0";
+          },
+          onChecked: (Map<String, dynamic> sourceTreeMap,
+                      List<Map<String, dynamic>> checkedList,
+                      bool isNullCheckedNodeChecked) {},
         ),
       ),
     );

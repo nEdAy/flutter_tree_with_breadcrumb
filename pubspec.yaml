@@ -1,6 +1,6 @@
 name: flutter_tree_with_breadcrumb
 description: Flutter tree select with breadcrumb widget.
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/nEdAy/flutter_tree_with_breadcrumb
 
 environment:
